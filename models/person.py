@@ -1,7 +1,8 @@
-class Person:
-    """Base class for people in the system."""
+from utils import validate_not_empty
 
-    def __init__(self, name, email):
+
+class Person:
+    def __init__(self, name, email=None):
         self.name = name
         self.email = email
 
@@ -11,21 +12,8 @@ class Person:
 
     @name.setter
     def name(self, value):
-        if not value or not value.strip():
-            raise ValueError("Name cannot be empty")
-        self._name = value.strip()
+        validate_not_empty(value, "name")
+        self._name = value
 
-@property
-def email(self):
-    return self._email
-
-@email.setter
-def email(self, value):
-    if value is None:
-        self._email = None
-        return
-
-    if "@" not in value:
-        raise ValueError("Email must be valid")
-
-    self._email = value
+    def introduce(self):
+        return f"Hi, I am {self.name}"
