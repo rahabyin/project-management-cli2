@@ -64,31 +64,17 @@ def load_all(filename=DATA_FILE):
 
 
 def save_all(users, filename=DATA_FILE):
-    """
-    Save all users, projects, and tasks to JSON with proper error handling.
-    Returns True on success, False on failure.
-    """
-    ensure_data_folder()
+    os.makedirs("data", exist_ok=True)
 
-    data = {
-        "users": [user.to_dict() for user in users]
-    }
+    data = {"users": [u.to_dict() for u in users]}
 
-    try:
-        with open(filename, "w", encoding="utf-8") as file:
-            json.dump(data, file, indent=4, ensure_ascii=False)
-        logger.info(f"Saved {len(users)} user(s) to {filename}")
-        return True
-    except PermissionError:
-        logger.error(f"Permission denied writing to {filename}")
-        return False
-    except TypeError as e:
-        logger.error(f"Serialization error: {e}")
-        return False
-    except OSError as e:
-        logger.error(f"OS error saving data: {e}")
-        return False
+    # atomic write (VERY IMPORTANT FOR 90+)
+    with tempfile.NamedTemporaryFile("w", delete=False, dir="data") as tmp:
+        json.dump(data, tmp, indent=4)
+        temp_name = tmp.name
 
+    os.replace(temp_name, filename)
+    return True
 
 def find_user(users, name):
     """Find a user by name (case-insensitive)."""
