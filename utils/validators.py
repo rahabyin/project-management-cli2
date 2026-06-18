@@ -9,8 +9,6 @@ def validate_not_empty(value, field_name):
 
 def validate_email(email):
     pattern = r"^[\w\.-]+@[\w\.-]+\.\w+$"
-
     if not re.match(pattern, email):
         raise ValueError("Invalid email address")
-
     return True

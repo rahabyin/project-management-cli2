@@ -1,5 +1,4 @@
-from utils import validate_not_empty
-
+from utils.validators import validate_not_empty
 
 class Person:
     def __init__(self, name, email=None):
@@ -17,3 +16,18 @@ class Person:
 
     def introduce(self):
         return f"Hi, I am {self.name}"
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "email": self.email
+        }
+
+    @classmethod
+    def from_dict(cls, data):
+        return cls(
+            name=data["name"],
+            email=data.get("email")
+        )
+    
+print("Utils and Person written.")

@@ -5,14 +5,14 @@ class Project:
     projects = []
     id_counter = 1
 
-    def __init__(self, title, description="", due_date=""):
-        self.id = Project.id_counter
-        Project.id_counter += 1
+    def __init__(self, title, description="", due_date="", tasks=None, project_id=None):
+        self.id = project_id if project_id is not None else Project.id_counter
+        Project.id_counter = max(Project.id_counter, self.id + 1)
 
         self.title = title
         self.description = description
         self.due_date = due_date
-        self.tasks = []
+        self.tasks = tasks if tasks is not None else []
 
         Project.projects.append(self)
 
@@ -27,14 +27,13 @@ class Project:
         self._title = value.strip()
 
     def add_task(self, task):
-    # if already a Task object → use it directly
-     if isinstance(task, Task):
-        self.tasks.append(task)
-        return task
-    # if it's a string → convert to Task
-     task = Task(title=task)
-     self.tasks.append(task)
-     return task
+        if isinstance(task, Task):
+            self.tasks.append(task)
+            return task
+        # if it's a string → convert to Task
+        task_obj = Task(title=task)
+        self.tasks.append(task_obj)
+        return task_obj
 
     def complete_task(self, task_id):
         """Mark a task complete by ID."""
@@ -43,9 +42,12 @@ class Project:
                 task.mark_complete()
                 return task
         return None
-    
+
     def get_completed_tasks(self):
-     return [task for task in self.tasks if task.status == "completed"]
+        return [task for task in self.tasks if task.status == "completed"]
+
+    def get_pending_tasks(self):
+        return [task for task in self.tasks if task.status == "pending"]
 
     def to_dict(self):
         return {
@@ -68,16 +70,18 @@ class Project:
         )
 
     def __str__(self):
-        return f"{self.title} ({len(self.tasks)} tasks)"
-    
+        return f"{self.title} ({len(self.tasks)} tasks, {len(self.get_completed_tasks())} completed)"
+
     @classmethod
     def clear_projects(cls):
-     cls.projects = []
-     cls.id_counter = 1
+        cls.projects.clear()
+        cls.id_counter = 1
 
     @classmethod
     def find_by_title(cls, title):
-     for project in cls.projects:
-        if project.title.lower() == title.lower():
-            return project
-     return None
+        for project in cls.projects:
+            if project.title.lower() == title.lower():
+                return project
+        return None
+    
+print("Task and Project written.")    

@@ -1,0 +1,13 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+rich = "==13.7.1"
+pytest = "==9.0.3"
+
+[dev-packages]
+
+[requires]
+python_version = "3.13"
