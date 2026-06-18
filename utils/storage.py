@@ -10,15 +10,21 @@ logger = logging.getLogger(__name__)
 
 DATA_FILE = "data/tracker_data.json"
 
+
 def ensure_data_folder():
     """Create the data folder if it does not exist."""
-    os.makedirs("data", exist_ok=True)
+    try:
+        os.makedirs("data", exist_ok=True)
+    except PermissionError:
+        logger.error("Permission denied creating data folder")
+        raise
 
 
 def load_all(filename=DATA_FILE):
     """
     Load users, projects, and tasks from JSON.
     Returns a list of User objects with fully reconstructed relationships.
+    Handles missing files, corrupted JSON, permission errors, and invalid data.
     """
     ensure_data_folder()
 
@@ -40,6 +46,9 @@ def load_all(filename=DATA_FILE):
     except PermissionError:
         logger.error(f"Permission denied reading {filename}. Starting with empty dataset.")
         return []
+    except UnicodeDecodeError as e:
+        logger.error(f"Encoding error in {filename} ({e}). Starting with empty dataset.")
+        return []
 
     users_data = data.get("users", [])
     users = []
@@ -57,6 +66,7 @@ def load_all(filename=DATA_FILE):
 def save_all(users, filename=DATA_FILE):
     """
     Save all users, projects, and tasks to JSON with proper error handling.
+    Returns True on success, False on failure.
     """
     ensure_data_folder()
 
@@ -74,6 +84,9 @@ def save_all(users, filename=DATA_FILE):
         return False
     except TypeError as e:
         logger.error(f"Serialization error: {e}")
+        return False
+    except OSError as e:
+        logger.error(f"OS error saving data: {e}")
         return False
 
 
@@ -103,3 +116,19 @@ def find_task(users, task_title):
                     return task, project, user
     return None, None, None
 
+
+def backup_data(filename=DATA_FILE, backup_suffix=".backup"):
+    """Create a backup of the current data file."""
+    if not os.path.exists(filename):
+        logger.warning("No data file to backup")
+        return False
+    backup_name = filename + backup_suffix
+    try:
+        with open(filename, "r", encoding="utf-8") as src:
+            with open(backup_name, "w", encoding="utf-8") as dst:
+                dst.write(src.read())
+        logger.info(f"Backup created: {backup_name}")
+        return True
+    except OSError as e:
+        logger.error(f"Failed to create backup: {e}")
+        return False

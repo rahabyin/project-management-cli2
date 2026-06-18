@@ -30,4 +30,3 @@ class Person:
             email=data.get("email")
         )
     
-print("Utils and Person written.")
